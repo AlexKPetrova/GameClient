@@ -10,9 +10,9 @@ public class ClientSocketManager {
         clientSocket = new Socket(ip, port);
     }
 
-    public void sendMessageToServer(Command command) throws IOException {
+    public void sendMessageToServer(GameData gameData) throws IOException {
         ObjectOutputStream objectOutputStream = new ObjectOutputStream(clientSocket.getOutputStream());
-        objectOutputStream.writeObject(new GameData(command));
+        objectOutputStream.writeObject(gameData);
     }
 
     public GameData getNextServerMessage() throws IOException, ClassNotFoundException {

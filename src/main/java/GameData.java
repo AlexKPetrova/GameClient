@@ -73,7 +73,7 @@ public class GameData implements Serializable {
                 if(j == arr.length-1) {
                     s.append(ints[j]).append(" \n ");
                 }else {
-                   s.append(ints[j]);
+                   s.append(ints[j]).append(" ");
                 }
             }
         }

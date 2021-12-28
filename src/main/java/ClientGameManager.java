@@ -13,44 +13,76 @@ public class ClientGameManager {
     }
 
     public void startGame() throws IOException, ClassNotFoundException {
+
+        String userInput;
+        System.out.println(CLIENT_PREFIX + "Please enter msg for server:");
+
+        userInput = scanner.nextLine();
+        Command command = Command.valueOf(userInput);
+        GameData gameData = new GameData(command);
+        socket.sendMessageToServer(gameData);
+
         while (true) {
-            String userInput;
-            System.out.println(CLIENT_PREFIX + "Please enter msg for server:");
+            gameData = socket.getNextServerMessage();
 
-            userInput = scanner.nextLine();
-            Command command = Command.valueOf(userInput);
-            socket.sendMessageToServer(command);
+            switch (gameData.getCommand()) {
 
-            GameData gameData = socket.getNextServerMessage();
-            System.out.println(gameData);
+                case NEXTTURN:
+                    doTurn(gameData.getField(), gameData.getNumber());
+                    socket.sendMessageToServer(gameData);
+                    break;
+
+                case WIN:
+                    System.out.println(gameData.getNumber() + "WIN");
+                    break;
+
+                case LOSE:
+                    System.out.println("Lose");
+                    break;
+
+                default:
+                    System.out.println("Ошибка");
+                    break;
+
+            }
+
         }
     }
 
-    private String parseServerMessage(String nextServerMessage) {
-        String[] data = nextServerMessage.split(";");
-        Command command = Command.valueOf(data[0]);
+    private void doTurn(int[][] arr, int number) {
+        System.out.println("Закрась " + number + " клеток");
+        System.out.println(viewField(arr));
+        Scanner scanner = new Scanner(System.in);
 
-        switch (command) {
+        for (int i = 0; i < number; i++) {
+            String s = scanner.nextLine();
+            while (s.length() > 3) {
+                System.out.println("Кто так координаты пишет... Давай еще раз");
+                s = scanner.nextLine();
+            }
+            String[] coordTurnClient = s.split(" ");
+            int x = Integer.parseInt(coordTurnClient[0]);
+            int y = Integer.parseInt(coordTurnClient[1]);
 
-            case NEXTTURN:
-                return doTurnAndGetNextMessage(data[1], data[2]);
-            case WIN:
-                System.out.println(data[3]);
-                return null;
-            default:
-                return null;
+            arr[x][y] = 1;
         }
+        System.out.println(viewField(arr));
     }
 
-    private String doTurnAndGetNextMessage(String field, String number) {
-        int numberInt = Integer.parseInt(number);
-        int[][] fieldAsArray = Utils.getArrayFromString(field);
-        System.out.println(field);
-        System.out.println("Give me index of turn csv style, number is " + numberInt);
-        String userInput = scanner.nextLine();
-        String[] split = userInput.split(",");
-        fieldAsArray[Integer.parseInt(split[0])][Integer.parseInt(split[1])] = 1;
 
-        return "NEXTTURN;" + Utils.arrayToString(fieldAsArray) + "; ; ";
+    public String viewField(int[][] arr) {
+        StringBuilder s = new StringBuilder();
+        s.append(" \n ");
+        for (int[] ints : arr) {
+            for (int j = 0; j < arr.length; j++) {
+                if (j == arr.length - 1) {
+                    s.append(ints[j]).append(" \n ");
+                } else {
+                    s.append(ints[j]).append(" ");
+                }
+            }
+        }
+        return s.toString();
     }
+
 }
