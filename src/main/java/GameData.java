@@ -19,6 +19,10 @@ public class GameData implements Serializable {
         this.message = message;
     }
 
+    public GameData(Command command) {
+        this.command = command;
+    }
+
     public Command getCommand() {
         return command;
     }

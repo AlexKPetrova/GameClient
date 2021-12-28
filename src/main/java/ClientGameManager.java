@@ -13,35 +13,37 @@ public class ClientGameManager {
     }
 
     public void startGame() throws IOException, ClassNotFoundException {
-
-        String userInput;
-        System.out.println(CLIENT_PREFIX + "Please enter msg for server:");
         while (true) {
-            userInput = scanner.nextLine();
-            socket.sendMessageToServer(userInput);
-            System.out.println(socket.getNextServerMessage());
-        }
+            String userInput;
+            System.out.println(CLIENT_PREFIX + "Please enter msg for server:");
 
-        //socket.close();
+            userInput = scanner.nextLine();
+            Command command = Command.valueOf(userInput);
+            socket.sendMessageToServer(command);
+
+            GameData gameData = socket.getNextServerMessage();
+            System.out.println(gameData);
+        }
     }
 
     private String parseServerMessage(String nextServerMessage) {
         String[] data = nextServerMessage.split(";");
         Command command = Command.valueOf(data[0]);
 
-        switch (command){
+        switch (command) {
 
             case NEXTTURN:
                 return doTurnAndGetNextMessage(data[1], data[2]);
             case WIN:
                 System.out.println(data[3]);
                 return null;
-            default: return null;
+            default:
+                return null;
         }
     }
 
     private String doTurnAndGetNextMessage(String field, String number) {
-        int numberInt= Integer.parseInt(number);
+        int numberInt = Integer.parseInt(number);
         int[][] fieldAsArray = Utils.getArrayFromString(field);
         System.out.println(field);
         System.out.println("Give me index of turn csv style, number is " + numberInt);
@@ -49,6 +51,6 @@ public class ClientGameManager {
         String[] split = userInput.split(",");
         fieldAsArray[Integer.parseInt(split[0])][Integer.parseInt(split[1])] = 1;
 
-        return "NEXTTURN;" + Utils.arrayToString(fieldAsArray)+"; ; ";
+        return "NEXTTURN;" + Utils.arrayToString(fieldAsArray) + "; ; ";
     }
 }
